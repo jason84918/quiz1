@@ -6,13 +6,20 @@ import string
 import sys, os, math, time, thread, smbus, random, requests
 import Adafruit_BMP.BMP085 as BMP085
 
+last = []
+new = []
+alpha = 0.5
+
+def lowpass():
+    for i from 0 to n
+        last[i] = alpha * last[i] + (1.0 - alpha) * new[i]
+    return
 
 def getSignedNumber(number):
     if number & (1 << 15):
         return number | ~65535
     else:
         return number & 65535
-
 
 def read_word(address, adr):
     high = i2c_bus.read_byte_data(address, adr)
@@ -45,59 +52,61 @@ i2c_bus.write_byte_data(addrHMC, 2, 0b00000000)  # Continuous sampling
 sensor = BMP085.BMP085()
 
 while True:
-    x, y, z = accel.read()
-    x = x / 256
-    y = y / 256
-    z = z / 256
-    print('ACC:')
-    print('X={0}, Y={1}, Z={2}'.format(x, y, z))
+    ax, ay, az = accel.read()
+    ax = ax / 256.0
+    ay = ay / 256.0
+    az = az / 256.0
+    
 
     i2c_bus.write_byte(i2c_address,0x28)
     X_L = i2c_bus.read_byte(i2c_address)
     i2c_bus.write_byte(i2c_address,0x29)
     X_H = i2c_bus.read_byte(i2c_address)
-    X = X_H << 8 | X_L
+    gx = X_H << 8 | X_L
 
     i2c_bus.write_byte(i2c_address,0x2A)
     Y_L = i2c_bus.read_byte(i2c_address)
     i2c_bus.write_byte(i2c_address,0x2B)
     Y_H = i2c_bus.read_byte(i2c_address)
-    Y = Y_H << 8 | Y_L
+    gy = Y_H << 8 | Y_L
 
     i2c_bus.write_byte(i2c_address,0x2C)
     Z_L = i2c_bus.read_byte(i2c_address)
     i2c_bus.write_byte(i2c_address,0x2D)
     Z_H = i2c_bus.read_byte(i2c_address)
-    Z = Z_H << 8 | Z_L
+    gz = Z_H << 8 | Z_L
     
-    X = getSignedNumber(X)
-    Y = getSignedNumber(Y)
-    Z = getSignedNumber(Z)
+    gx = getSignedNumber(X)
+    gy = getSignedNumber(Y)
+    gz = getSignedNumber(Z)
     
-    X = (X * 8.75) / 1000
-    Y = (Y * 8.75) / 1000
-    Z = (Z * 8.75) / 1000
+    gx = (gx * 8.75) / 1000
+    gy = (gy * 8.75) / 1000
+    gz = (gz * 8.75) / 1000
     
+    mx = read_word_2c(addrHMC, 3)
+    my = read_word_2c(addrHMC, 7)
+    mz = read_word_2c(addrHMC, 5)
     
+    mx = mx * 0.92
+    my = my * 0.92
+    mz = mz * 0.92
+    
+    a = sensor.read_altitude()
+    
+    new = [ax, ay, ax, gx, gy, gz, mz, my, mz, a]
+    
+    lowpass()
+    
+    print('ACC:')
+    print('X={0}, Y={1}, Z={2}'.format(x, y, z))
     print('GYRO:')
-
-    print string.rjust(`X`, 10),
-    print string.rjust(`Y`, 10),
-    print string.rjust(`Z`, 10)
-
-    x = read_word_2c(addrHMC, 3)
-    y = read_word_2c(addrHMC, 7)
-    z = read_word_2c(addrHMC, 5)
-    
-    x = x * 0.92
-    y = y * 0.92
-    z = z * 0.92
-
+    print string.rjust(`gx`, 10),
+    print string.rjust(`gy`, 10),
+    print string.rjust(`gz`, 10)
     print('MAG:')
-
-    print x,",",y,",",z
-
-    print('Alti:{0:0.2f} m'.format(sensor.read_altitude()))
+    print "x:"mx,",    y:",my,",    z:",mz
+    print "alti:", a
 
     time.sleep(0.3)
 
