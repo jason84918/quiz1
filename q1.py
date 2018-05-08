@@ -6,6 +6,28 @@ import string
 import sys, os, math, time, thread, smbus, random, requests
 import Adafruit_BMP.BMP085 as BMP085
 
+
+def getSignedNumber(number):
+    if number & (1 << 15):
+        return number | ~65535
+    else:
+        return number & 65535
+
+
+def read_word(address, adr):
+    high = i2c_bus.read_byte_data(address, adr)
+    low = i2c_bus.read_byte_data(address, adr + 1)
+    val = (high << 8) + low
+    return val
+
+def read_word_2c(address, adr):
+    val = read_word(address, adr)
+    if (val >= 0x8000):
+        return -((65535 - val) + 1)
+    else:
+        return val
+   
+
 accel = Adafruit_ADXL345.ADXL345()
 
 i2c_bus=smbus.SMBus(1)
@@ -63,35 +85,15 @@ while True:
 
     print x,",",y,",",z
 
-	print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
-	print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
-	print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
-	print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
+    print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
+    print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
+    print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
+    print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
 
     time.sleep(0.3)
 
 
-
-def getSignedNumber(number):
-    if number & (1 << 15):
-        return number | ~65535
-    else:
-        return number & 65535
-
-
-def read_word(address, adr):
-    high = i2c_bus.read_byte_data(address, adr)
-    low = i2c_bus.read_byte_data(address, adr + 1)
-    val = (high << 8) + low
-    return val
-
-def read_word_2c(address, adr):
-    val = read_word(address, adr)
-    if (val >= 0x8000):
-        return -((65535 - val) + 1)
-    else:
-        return val
-    
+ 
 
 
 
