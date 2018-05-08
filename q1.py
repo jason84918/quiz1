@@ -63,8 +63,11 @@ while True:
 
     print x,",",y,",",z
 
+	print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
+	print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
+	print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
+	print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
 
-	print('Alti:{0:0.2f} m'.format(sensor.read_altitude()))
     time.sleep(0.3)
 
 
@@ -88,16 +91,7 @@ def read_word_2c(address, adr):
         return -((65535 - val) + 1)
     else:
         return val
-
-
-  
-
     
-print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
-print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
-print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
-print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
-
 
 
 
