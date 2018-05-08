@@ -8,11 +8,13 @@ import Adafruit_BMP.BMP085 as BMP085
 
 last = []
 new = []
+result = []
 alpha = 0.5
 
 def lowpass():
     for i from 0 to n
-        last[i] = alpha * last[i] + (1.0 - alpha) * new[i]
+        result[i] = alpha * last[i] + (1.0 - alpha) * new[i]
+        last[i] = new[i]
     return
 
 def getSignedNumber(number):
@@ -94,9 +96,20 @@ while True:
     
     a = sensor.read_altitude()
     
-    new = [ax, ay, ax, gx, gy, gz, mz, my, mz, a]
-    
+    new = [ax, ay, az, gx, gy, gz, mx, my, mz, a]
+      
     lowpass()
+    
+    ax = result[0]
+    ay = result[1]
+    az = result[2]
+    gx = result[3]
+    gy = result[4]
+    gz = result[5]
+    mx = result[6]
+    my = result[7]
+    mz = result[8]
+    a = result[9]
     
     print('ACC:')
     print('X={0}, Y={1}, Z={2}'.format(x, y, z))
