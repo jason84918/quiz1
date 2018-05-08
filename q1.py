@@ -46,6 +46,9 @@ sensor = BMP085.BMP085()
 
 while True:
     x, y, z = accel.read()
+    x = x / 256
+    y = y / 256
+    z = z / 256
     print('ACC:')
     print('X={0}, Y={1}, Z={2}'.format(x, y, z))
 
@@ -66,11 +69,16 @@ while True:
     i2c_bus.write_byte(i2c_address,0x2D)
     Z_H = i2c_bus.read_byte(i2c_address)
     Z = Z_H << 8 | Z_L
-
+    
     X = getSignedNumber(X)
     Y = getSignedNumber(Y)
     Z = getSignedNumber(Z)
-
+    
+    X = (X * 8.75) / 1000
+    Y = (Y * 8.75) / 1000
+    Z = (Z * 8.75) / 1000
+    
+    
     print('GYRO:')
 
     print string.rjust(`X`, 10),
@@ -80,15 +88,16 @@ while True:
     x = read_word_2c(addrHMC, 3)
     y = read_word_2c(addrHMC, 7)
     z = read_word_2c(addrHMC, 5)
+    
+    x = x * 0.92
+    y = y * 0.92
+    z = z * 0.92
 
     print('MAG:')
 
     print x,",",y,",",z
 
-    print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
-    print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
-    print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
-    print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
+    print('Alti:{0:0.2f} m'.format(sensor.read_altitude()))
 
     time.sleep(0.3)
 
